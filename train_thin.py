@@ -173,15 +173,15 @@ def train_ori(opt):
     
     y = tf.one_hot(y_s, n_classes, axis=-1)
     emb_ori = resnet34(x, is_training=True, kernel_initializer=tf.orthogonal_initializer())
-    fc1 = tf.layers.conv2d(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, name='fc_block1_conv')    
+    fc1 = tf.keras.layers.Conv2D(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, name='fc_block1_conv')    
     if avg == 'netvlad':
-        x_center = tf.layers.conv2d(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center_conv')
+        x_center = tf.keras.layers.Conv2D(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center_conv')
         pooling_output = VLAD_pooling(fc1, x_center, k_centers=10)
     else:
         pooling_output = tf.reduce_mean(fc1, [1, 2], name='gap')
 
-    fc2 = tf.layers.dense(pooling_output, 512, activation=tf.nn.relu , name='fc_block2_conv')
-    emb = tf.layers.dense(fc2, n_classes, name='fc_prob_conv')
+    fc2 = tf.keras.layers.dense(pooling_output, 512, activation=tf.nn.relu , name='fc_block2_conv')
+    emb = tf.keras.layers.dense(fc2, n_classes, name='fc_prob_conv')
 
     # emb = tf.contrib.layers.fully_connected(emb_ori, n_classes, activation_fn=None)
     emb_softmax = tf.nn.softmax(emb, axis=1)
@@ -316,7 +316,7 @@ def train(opt):
     y = tf.one_hot(y_s, n_classes, axis=-1)
 
     emb_ori = resnet34(x, is_training=True)
-    fc1 = tf.layers.conv2d(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, name='fc_block1')
+    fc1 = tf.keras.layers.Conv2D(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, name='fc_block1')
     # print(fc1)
     # fc1 = tf.contrib.layers.flatten(fc1)
     # print(fc1)
@@ -325,15 +325,15 @@ def train(opt):
     # TODO
     # NetVLAD
     if avg == 'netvlad':
-        x_center = tf.layers.conv2d(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center')
+        x_center = tf.keras.layers.Conv2D(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center')
         pooling_output = VLAD_pooling(fc1, x_center, k_centers=10)
     else:
         pooling_output = tf.reduce_mean(fc1, [1, 2])
 
     print('pooling output shape: ', pooling_output)
-    fc2 = tf.layers.dense(pooling_output, 512, activation=tf.nn.relu , name='fc_block2')
+    fc2 = tf.keras.layers.dense(pooling_output, 512, activation=tf.nn.relu , name='fc_block2')
 
-    emb = tf.layers.dense(fc2, n_classes, name='fc_prob', use_bias=False)
+    emb = tf.keras.layers.dense(fc2, n_classes, name='fc_prob', use_bias=False)
 
     # emb = tf.contrib.layers.fully_connected(emb_ori, n_classes, activation_fn=None)
     emb_softmax = tf.nn.softmax(emb, axis=1)
@@ -474,7 +474,7 @@ def test(opt):
 
     y = tf.one_hot(y_s, n_classes, axis=-1)
     emb_ori = voicenet(x, is_training=False)
-    emb = tf.layers.dense(emb_ori, n_classes, name='fc_prob')
+    emb = tf.keras.layers.dense(emb_ori, n_classes, name='fc_prob')
     # emb = tf.contrib.layers.fully_connected(emb_ori, n_classes, activation_fn=None)
 
     # emb = tf.nn.l2_normalize(emb, dim=1)
@@ -582,7 +582,7 @@ def veri(ckpt_file='/data/ChuyuanXiong/backup/speaker_real413_ckpt/Speaker_vox_i
 
     y = tf.one_hot(y_s, 5994, axis=-1)
     emb_ori = resnet34(x, is_training=False, reuse=reuse)
-    fc1 = tf.layers.conv2d(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, reuse=reuse, name='fc_block1')
+    fc1 = tf.keras.layers.Conv2D(emb_ori, filters=512, kernel_size=[7,1], strides=[1,1], padding='SAME', activation=tf.nn.relu, reuse=reuse, name='fc_block1')
     # print(fc1)
     # fc1 = tf.contrib.layers.flatten(fc1)
     # print(fc1)
@@ -592,14 +592,14 @@ def veri(ckpt_file='/data/ChuyuanXiong/backup/speaker_real413_ckpt/Speaker_vox_i
     # NetVLAD
 
     if avg == 'netvlad':
-        x_center = tf.layers.conv2d(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center')
+        x_center = tf.keras.layers.Conv2D(emb_ori, filters=10, kernel_size=[7,1], strides=[1,1], use_bias=True, padding='SAME', name='x_center')
         pooling_output = VLAD_pooling(fc1, x_center, k_centers=10)
     else:
         pooling_output = tf.reduce_mean(fc1, [1, 2], name='gap')
 
 
     print('pooling output shape: ', pooling_output)
-    fc2 = tf.layers.dense(pooling_output, 512, activation=tf.nn.relu, reuse=reuse , name='fc_block2')
+    fc2 = tf.keras.layers.dense(pooling_output, 512, activation=tf.nn.relu, reuse=reuse , name='fc_block2')
     fc2 = tf.nn.l2_normalize(fc2, 1)
 
     var_list = tf.trainable_variables()
